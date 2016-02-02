@@ -45,7 +45,7 @@
                 <div class="form-group">
                     <label for="details"><?php esc_html_e('Details', 'mtl_domain');?></label>
                     <?php
-                        $content = get_post_meta($post->id, 'details', true);
+                        $content = get_post_meta($post->ID, 'details', true);
                         $editor ='details';
                         $settings = array(
                                 'textarea_rows' => 5,
@@ -61,3 +61,26 @@
             </div>
         <?php
     }
+    
+    function mtl_todos_save($post_id){
+        $is_autosave = wp_is_post_autosave($post_id);
+        $is_revision = wp_is_post_revision($post_id);
+        //varifing post nonce
+        $is_valid_nonce = (isset($_POST['wp_todos_nonce']) && wp_verify_nonce($_POST['wp_todos_nonce'], basename(__FILE__)))? 'true' : 'false';
+        if($is_autosave || $is_revision || !$is_valid_nonce){
+            return;
+        }
+        //verifing post data
+        if(isset($_POST['priority'])){
+            update_post_meta($post_id, 'priority', sanitize_text_field($_POST['priority']));
+        }
+         if(isset($_POST['details'])){
+            update_post_meta($post_id, 'details', sanitize_text_field($_POST['details']));
+        }
+         if(isset($_POST['due_date'])){
+            update_post_meta($post_id, 'due_date', sanitize_text_field($_POST['due_date']));
+        }
+    }
+    
+    add_action('save_post', 'mtl_todos_save');
+    
